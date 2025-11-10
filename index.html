@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; margin: 40px; color: #111; }
+    main { max-width: 700px; margin: 0 auto; }
+    input[type="text"] { padding: 8px; font-size: 14px; width: 60%; box-sizing: border-box; }
+    button { padding: 8px 12px; margin-left: 8px; }
+    #results { margin-top: 16px; font-size: 16px; }
+    a { color: #0066cc; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Search</h1>
+    <form id="searchForm" action="#" method="get" novalidate>
+      <label for="q">Enter search term:</label>
+      <input id="q" name="q" type="text" placeholder="Search..." autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+    <hr>
+    <section id="results" aria-live="polite"></section>
+    <div id="share" style="margin-top: 12px;"></div>
+  </main>
+
+  <script>
+    (function(){
+      const form = document.getElementById('searchForm');
+      const input = document.getElementById('q');
+      const resultsEl = document.getElementById('results');
+      const shareEl = document.getElementById('share');
+
+      // Sanitize <, >, '
+      function sanitize(str='') {
+        return str.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
+      }
+
+      function urlEncode(str='') {
+        return encodeURIComponent(str);
+      }
+
+      // Render results safely with <strong> for the query
+      function render(query) {
+        resultsEl.innerHTML = '';
+        shareEl.innerHTML = '';
+        if (!query) return;
+
+        const strongEl = document.createElement('strong');
+        strongEl.textContent = query; // safe insertion
+
+        const textBefore = document.createTextNode("No results found for '");
+        const textAfter = document.createTextNode("'");
+
+        resultsEl.appendChild(textBefore);
+        resultsEl.appendChild(strongEl);
+        resultsEl.appendChild(textAfter);
+
+        const shareLink = document.createElement('a');
+        shareLink.href = '#?q=' + urlEncode(query);
+        shareLink.textContent = '#?q=' + urlEncode(query);
+        shareEl.textContent = 'Share this search: ';
+        shareEl.appendChild(shareLink);
+      }
+
+      // Read query from URL on page load
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name) || '';
+      }
+
+      const initialQuery = getQueryParam('q');
+      if (initialQuery) input.value = initialQuery;
+      render(initialQuery);
+
+      // Handle form submission
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const q = input.value;
+        // Update URL without reload
+        const newUrl = window.location.pathname + '?q=' + urlEncode(q);
+        window.history.replaceState({}, '', newUrl);
+        render(q);
+      });
+    })();
+  </script>
+</body>
+</html>
